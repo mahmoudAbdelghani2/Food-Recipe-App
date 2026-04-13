@@ -62,6 +62,41 @@ class DatabaseHelper {
     if (res.isNotEmpty) {
       return UserModel.fromMap(res.first);
     }
-    return null; // لو البيانات غلط أو مش موجودة
+    return null;
+  }
+
+  Future<void> toggleFavorite(int userId, int recipeId) async {
+    final dbClient = await db;
+
+    var res = await dbClient!.query(
+      'Favorites',
+      where: 'userId = ? AND recipeId = ?',
+      whereArgs: [userId, recipeId],
+    );
+
+    if (res.isEmpty) {
+      await dbClient.insert('Favorites', {
+        'userId': userId,
+        'recipeId': recipeId,
+      });
+    } else {
+      await dbClient.delete(
+        'Favorites',
+        where: 'userId = ? AND recipeId = ?',
+        whereArgs: [userId, recipeId],
+      );
+    }
+  }
+
+  Future<List<int>> getFavoriteIds(int userId) async {
+    final dbClient = await db;
+    var res = await dbClient!.query(
+      'Favorites',
+      columns: ['recipeId'],
+      where: 'userId = ?',
+      whereArgs: [userId],
+    );
+
+    return res.map((e) => e['recipeId'] as int).toList();
   }
 }
