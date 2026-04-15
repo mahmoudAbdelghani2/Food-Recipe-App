@@ -1,10 +1,15 @@
+// ignore_for_file: avoid_print
+
 import 'package:food_recipe_app/Models/recipe_model.dart';
 import 'package:food_recipe_app/Services/database_helper.dart';
 import 'package:food_recipe_app/Utils/constants.dart';
+import 'package:food_recipe_app/Services/pref_service.dart';
 
 class RecipeController {
   List<RecipeModel> displayedRecipes = List.from(AppConstants.allRecipes);
   List<RecipeModel> favoriteRecipes = [];
+  final DatabaseHelper _dbHelper = DatabaseHelper();
+
   void searchRecipes(String query) {
     if (query.isEmpty) {
       displayedRecipes = List.from(AppConstants.allRecipes);
@@ -25,12 +30,32 @@ class RecipeController {
     }
   }
 
-  Future<void> getFavorites(int userId) async {
-    DatabaseHelper dbHelper = DatabaseHelper();
-    List<int> favIds = await dbHelper.getFavoriteIds(userId);
+  Future<void> getFavorites() async {
+    int? userId = await PrefService.getUserId();
 
-    favoriteRecipes = AppConstants.allRecipes.where((recipe) {
-      return favIds.contains(recipe.id);
-    }).toList();
+    if (userId != null) {
+      List<int> favIds = await _dbHelper.getFavoriteIds(userId);
+
+      favoriteRecipes = AppConstants.allRecipes.where((recipe) {
+        return favIds.contains(recipe.id);
+      }).toList();
+    } else {
+      favoriteRecipes = [];
+    }
+  }
+
+  Future<void> toggleFavorite(int recipeId) async {
+    int? userId = await PrefService.getUserId();
+
+    if (userId != null) {
+      await _dbHelper.toggleFavorite(userId, recipeId);
+      await getFavorites();
+    } else {
+      print("User is not logged in!");
+    }
+  }
+
+  bool isFavorite(int recipeId) {
+    return favoriteRecipes.any((recipe) => recipe.id == recipeId);
   }
 }

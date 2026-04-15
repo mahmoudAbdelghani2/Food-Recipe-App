@@ -2,9 +2,13 @@
 
 import 'package:food_recipe_app/Models/user_model.dart';
 import 'package:food_recipe_app/Services/database_helper.dart';
+// تأكد من مسار الاستدعاء ده حسب هيكل مشروعك
+import 'package:food_recipe_app/Services/pref_service.dart';
 
 class AuthController {
-  Future<void> registerUser({
+  final DatabaseHelper _dbHelper = DatabaseHelper();
+
+  Future<bool> registerUser({
     required String name,
     required String email,
     required String password,
@@ -17,13 +21,37 @@ class AuthController {
       gender: gender,
     );
 
-    DatabaseHelper dbHelper = DatabaseHelper();
-    int result = await dbHelper.insertUser(newUser);
+    int result = await _dbHelper.insertUser(newUser);
 
     if (result > 0) {
       print("successfully registered user");
+      await PrefService.saveLoginInfo(result);
+      return true;
     } else {
       print("failed to register user");
+      return false;
     }
+  }
+
+  Future<bool> loginUser(String email, String password) async {
+    UserModel? user = await _dbHelper.checkUser(email, password);
+
+    if (user != null && user.id != null) {
+      await PrefService.saveLoginInfo(user.id!);
+      print("Login successful");
+      return true;
+    } else {
+      print("Invalid email or password");
+      return false;
+    }
+  }
+
+  Future<void> logoutUser() async {
+    await PrefService.logout();
+    print("Logged out successfully");
+  }
+
+  Future<bool> isUserLoggedIn() async {
+    return await PrefService.checkLoginStatus();
   }
 }
