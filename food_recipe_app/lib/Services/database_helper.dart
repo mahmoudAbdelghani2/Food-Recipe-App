@@ -1,6 +1,8 @@
-import 'package:food_recipe_app/Models/user_model.dart';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+
+import '../Models/user_model.dart';
 
 class DatabaseHelper {
   static Database? _database;

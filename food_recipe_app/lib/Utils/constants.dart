@@ -1,4 +1,6 @@
-import 'package:food_recipe_app/Models/recipe_model.dart';
+
+
+import '../Models/recipe_model.dart';
 
 class AppConstants {
   static const String appName = "Food Recipe App";
