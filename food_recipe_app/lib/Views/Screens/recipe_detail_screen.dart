@@ -1,11 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../Utils/responsive_utils.dart';
 
-
 class RecipeDetailScreen extends StatelessWidget {
+  static const String _fallbackImageUrl =
+      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800';
+
   final String recipeId;
   final Map<String, dynamic>? recipeData;
 
@@ -15,22 +18,38 @@ class RecipeDetailScreen extends StatelessWidget {
     this.recipeData,
   });
 
+  String _safeImageUrl(dynamic url) {
+    final parsed = (url ?? '').toString().trim();
+    return parsed.isEmpty ? _fallbackImageUrl : parsed;
+  }
+
   @override
   Widget build(BuildContext context) {
     final recipe = recipeData ?? _getDummyRecipe();
     final isDesktop = ResponsiveUtils.isDesktop(context);
-    final isTablet = ResponsiveUtils.isTablet(context);
     final isSmall = ResponsiveUtils.isSmallMobile(context);
 
     // 👉 Responsive Values
     final appBarHeight = ResponsiveUtils.getValue4<double>(
-      context, small: 250, medium: 280, large: 300, xlarge: 350,
+      context,
+      small: 250,
+      medium: 280,
+      large: 300,
+      xlarge: 350,
     );
     final titleFontSize = ResponsiveUtils.getValue4<double>(
-      context, small: 20, medium: 24, large: 28, xlarge: 32,
+      context,
+      small: 20,
+      medium: 24,
+      large: 28,
+      xlarge: 32,
     );
     final sectionTitleSize = ResponsiveUtils.getValue4<double>(
-      context, small: 16, medium: 18, large: 20, xlarge: 22,
+      context,
+      small: 16,
+      medium: 18,
+      large: 20,
+      xlarge: 22,
     );
     final bodyFontSize = ResponsiveUtils.fontSizeBody(context);
     final smallFontSize = ResponsiveUtils.fontSizeSmall(context);
@@ -48,35 +67,48 @@ class RecipeDetailScreen extends StatelessWidget {
       // 👉 Desktop: App Bar مخصص
       appBar: isDesktop
           ? AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border_rounded),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.share_rounded),
-            onPressed: () {},
-          ),
-          SizedBox(width: horizontalPadding * 0.5),
-        ],
-      )
+              backgroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new),
+                onPressed: () => context.pop(),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.favorite_border_rounded),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: const Icon(Icons.share_rounded),
+                  onPressed: () {},
+                ),
+                SizedBox(width: horizontalPadding * 0.5),
+              ],
+            )
           : null,
 
       body: isDesktop
-      // 👉 Desktop Layout: عمودين (صورة + محتوى)
-          ? _buildDesktopLayout(context, recipe, borderRadiusLarge, spacingLarge, horizontalPadding)
-      // 👉 Mobile/Tablet Layout: Scroll عادي
+          // 👉 Desktop Layout: عمودين (صورة + محتوى)
+          ? _buildDesktopLayout(context, recipe, borderRadiusLarge,
+              spacingLarge, horizontalPadding)
+          // 👉 Mobile/Tablet Layout: Scroll عادي
           : _buildMobileLayout(
-        context, recipe, appBarHeight, titleFontSize, sectionTitleSize,
-        bodyFontSize, smallFontSize, iconSize, borderRadius, borderRadiusLarge,
-        spacingSmall, spacingMedium, spacingLarge, horizontalPadding, isSmall,
-      ),
+              context,
+              recipe,
+              appBarHeight,
+              titleFontSize,
+              sectionTitleSize,
+              bodyFontSize,
+              smallFontSize,
+              iconSize,
+              borderRadius,
+              borderRadiusLarge,
+              spacingSmall,
+              spacingMedium,
+              spacingLarge,
+              horizontalPadding,
+              isSmall,
+            ),
 
       // 👉 Bottom Bar: يظهر على الموبايل/تابلت فقط
       bottomNavigationBar: isDesktop
@@ -90,12 +122,12 @@ class RecipeDetailScreen extends StatelessWidget {
   // ─────────────────────────────────────────────
 
   Widget _buildDesktopLayout(
-      BuildContext context,
-      Map<String, dynamic> recipe,
-      double borderRadiusLarge,
-      double spacingLarge,
-      double horizontalPadding,
-      ) {
+    BuildContext context,
+    Map<String, dynamic> recipe,
+    double borderRadiusLarge,
+    double spacingLarge,
+    double horizontalPadding,
+  ) {
     return Row(
       children: [
         // 👈 Image Column (40%)
@@ -105,7 +137,8 @@ class RecipeDetailScreen extends StatelessWidget {
             height: double.infinity,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(recipe['image']),
+                image:
+                    CachedNetworkImageProvider(_safeImageUrl(recipe['image'])),
                 fit: BoxFit.cover,
               ),
             ),
@@ -146,7 +179,8 @@ class RecipeDetailScreen extends StatelessWidget {
                   right: 20,
                   child: Column(
                     children: [
-                      _desktopActionButton(Icons.favorite_border_rounded, () {}),
+                      _desktopActionButton(
+                          Icons.favorite_border_rounded, () {}),
                       const SizedBox(height: 12),
                       _desktopActionButton(Icons.share_rounded, () {}),
                     ],
@@ -167,7 +201,8 @@ class RecipeDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDesktopContent(context, recipe, borderRadiusLarge, spacingLarge),
+                  _buildDesktopContent(
+                      context, recipe, borderRadiusLarge, spacingLarge),
                 ],
               ),
             ),
@@ -192,11 +227,11 @@ class RecipeDetailScreen extends StatelessWidget {
   }
 
   Widget _buildDesktopContent(
-      BuildContext context,
-      Map<String, dynamic> recipe,
-      double borderRadiusLarge,
-      double spacingLarge,
-      ) {
+    BuildContext context,
+    Map<String, dynamic> recipe,
+    double borderRadiusLarge,
+    double spacingLarge,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -208,10 +243,7 @@ class RecipeDetailScreen extends StatelessWidget {
             fontWeight: FontWeight.w700,
             color: Colors.black87,
           ),
-        )
-            .animate()
-            .fadeIn(delay: 200.ms)
-            .slideY(begin: 0.3, end: 0),
+        ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.3, end: 0),
 
         SizedBox(height: ResponsiveUtils.spacingSmall(context)),
 
@@ -220,7 +252,7 @@ class RecipeDetailScreen extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundImage: NetworkImage(
+              backgroundImage: CachedNetworkImageProvider(
                 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50',
               ),
             ),
@@ -244,10 +276,7 @@ class RecipeDetailScreen extends StatelessWidget {
               ),
             ),
           ],
-        )
-            .animate()
-            .fadeIn(delay: 300.ms)
-            .slideY(begin: 0.3, end: 0),
+        ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3, end: 0),
 
         SizedBox(height: spacingLarge),
 
@@ -278,10 +307,7 @@ class RecipeDetailScreen extends StatelessWidget {
               context: context,
             ),
           ],
-        )
-            .animate()
-            .fadeIn(delay: 400.ms)
-            .slideY(begin: 0.3, end: 0),
+        ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.3, end: 0),
 
         SizedBox(height: spacingLarge),
 
@@ -295,10 +321,7 @@ class RecipeDetailScreen extends StatelessWidget {
             color: Colors.black54,
             height: 1.6,
           ),
-        )
-            .animate()
-            .fadeIn(delay: 600.ms)
-            .slideX(begin: -0.2, end: 0),
+        ).animate().fadeIn(delay: 600.ms).slideX(begin: -0.2, end: 0),
 
         SizedBox(height: spacingLarge),
 
@@ -342,22 +365,22 @@ class RecipeDetailScreen extends StatelessWidget {
   // ─────────────────────────────────────────────
 
   Widget _buildMobileLayout(
-      BuildContext context,
-      Map<String, dynamic> recipe,
-      double appBarHeight,
-      double titleFontSize,
-      double sectionTitleSize,
-      double bodyFontSize,
-      double smallFontSize,
-      double iconSize,
-      double borderRadius,
-      double borderRadiusLarge,
-      double spacingSmall,
-      double spacingMedium,
-      double spacingLarge,
-      double horizontalPadding,
-      bool isSmall,
-      ) {
+    BuildContext context,
+    Map<String, dynamic> recipe,
+    double appBarHeight,
+    double titleFontSize,
+    double sectionTitleSize,
+    double bodyFontSize,
+    double smallFontSize,
+    double iconSize,
+    double borderRadius,
+    double borderRadiusLarge,
+    double spacingSmall,
+    double spacingMedium,
+    double spacingLarge,
+    double horizontalPadding,
+    bool isSmall,
+  ) {
     return CustomScrollView(
       slivers: [
         // 👉 App Bar with Hero Image
@@ -392,10 +415,13 @@ class RecipeDetailScreen extends StatelessWidget {
           flexibleSpace: FlexibleSpaceBar(
             background: Hero(
               tag: 'recipe_image_$recipeId',
-              child: Image.network(
-                recipe['image'],
+              child: CachedNetworkImage(
+                imageUrl: _safeImageUrl(recipe['image']),
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
+                placeholder: (context, url) => Container(
+                  color: const Color(0xFFE3E3E5),
+                ),
+                errorWidget: (context, url, error) => Container(
                   color: Colors.grey[300],
                   child: const Icon(Icons.broken_image, color: Colors.grey),
                 ),
@@ -419,10 +445,7 @@ class RecipeDetailScreen extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     color: Colors.black87,
                   ),
-                )
-                    .animate()
-                    .fadeIn(delay: 200.ms)
-                    .slideY(begin: 0.3, end: 0),
+                ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.3, end: 0),
 
                 SizedBox(height: spacingSmall),
 
@@ -431,7 +454,7 @@ class RecipeDetailScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: isSmall ? 14 : 16,
-                      backgroundImage: NetworkImage(
+                      backgroundImage: CachedNetworkImageProvider(
                         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50',
                       ),
                     ),
@@ -445,7 +468,8 @@ class RecipeDetailScreen extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Icon(Icons.star_rounded, color: const Color(0xFFFFC107), size: iconSize),
+                    Icon(Icons.star_rounded,
+                        color: const Color(0xFFFFC107), size: iconSize),
                     SizedBox(width: 4),
                     Text(
                       recipe['rating']?.toString() ?? '4.5',
@@ -455,10 +479,7 @@ class RecipeDetailScreen extends StatelessWidget {
                       ),
                     ),
                   ],
-                )
-                    .animate()
-                    .fadeIn(delay: 300.ms)
-                    .slideY(begin: 0.3, end: 0),
+                ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3, end: 0),
 
                 SizedBox(height: spacingLarge),
 
@@ -489,10 +510,7 @@ class RecipeDetailScreen extends StatelessWidget {
                       context: context,
                     ),
                   ],
-                )
-                    .animate()
-                    .fadeIn(delay: 400.ms)
-                    .slideY(begin: 0.3, end: 0),
+                ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.3, end: 0),
 
                 SizedBox(height: spacingLarge),
 
@@ -506,10 +524,7 @@ class RecipeDetailScreen extends StatelessWidget {
                     color: Colors.black54,
                     height: 1.6,
                   ),
-                )
-                    .animate()
-                    .fadeIn(delay: 600.ms)
-                    .slideX(begin: -0.2, end: 0),
+                ).animate().fadeIn(delay: 600.ms).slideX(begin: -0.2, end: 0),
 
                 SizedBox(height: spacingLarge),
 
@@ -518,7 +533,11 @@ class RecipeDetailScreen extends StatelessWidget {
                 SizedBox(height: spacingSmall),
                 ..._buildIngredientsList(context).map((item) => item
                     .animate()
-                    .fadeIn(delay: Duration(milliseconds: 800 + (_buildIngredientsList(context).indexOf(item) * 100)))
+                    .fadeIn(
+                        delay: Duration(
+                            milliseconds: 800 +
+                                (_buildIngredientsList(context).indexOf(item) *
+                                    100)))
                     .slideX(begin: -0.2, end: 0)),
 
                 SizedBox(height: spacingLarge),
@@ -528,7 +547,11 @@ class RecipeDetailScreen extends StatelessWidget {
                 SizedBox(height: spacingSmall),
                 ..._buildInstructionsList(context).map((item) => item
                     .animate()
-                    .fadeIn(delay: Duration(milliseconds: 1300 + (_buildInstructionsList(context).indexOf(item) * 150)))
+                    .fadeIn(
+                        delay: Duration(
+                            milliseconds: 1300 +
+                                (_buildInstructionsList(context).indexOf(item) *
+                                    150)))
                     .slideX(begin: -0.2, end: 0)),
 
                 const SizedBox(height: 100),
@@ -573,7 +596,8 @@ class RecipeDetailScreen extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(ResponsiveUtils.borderRadius(context)),
+          borderRadius:
+              BorderRadius.circular(ResponsiveUtils.borderRadius(context)),
         ),
         child: Column(
           children: [
@@ -609,7 +633,11 @@ class RecipeDetailScreen extends StatelessWidget {
       '1 cup protein of choice',
     ];
     final iconSize = ResponsiveUtils.getValue4<double>(
-      context, small: 14, medium: 14, large: 16, xlarge: 18,
+      context,
+      small: 14,
+      medium: 14,
+      large: 16,
+      xlarge: 18,
     );
     final fontSize = ResponsiveUtils.fontSizeBody(context);
 
@@ -630,7 +658,8 @@ class RecipeDetailScreen extends StatelessWidget {
             SizedBox(width: ResponsiveUtils.spacingMedium(context)),
             Text(
               ingredient,
-              style: GoogleFonts.poppins(fontSize: fontSize, color: Colors.black87),
+              style: GoogleFonts.poppins(
+                  fontSize: fontSize, color: Colors.black87),
             ),
           ],
         ),
@@ -648,7 +677,11 @@ class RecipeDetailScreen extends StatelessWidget {
       'Serve hot and enjoy!',
     ];
     final boxSize = ResponsiveUtils.getValue4<double>(
-      context, small: 28, medium: 32, large: 36, xlarge: 40,
+      context,
+      small: 28,
+      medium: 32,
+      large: 36,
+      xlarge: 40,
     );
     final fontSize = ResponsiveUtils.fontSizeBody(context);
 
@@ -697,11 +730,11 @@ class RecipeDetailScreen extends StatelessWidget {
   }
 
   Widget _buildBottomBar(
-      BuildContext context,
-      double iconSize,
-      double fontSize,
-      double borderRadius,
-      ) {
+    BuildContext context,
+    double iconSize,
+    double fontSize,
+    double borderRadius,
+  ) {
     return Container(
       padding: EdgeInsets.all(ResponsiveUtils.horizontalPadding(context)),
       decoration: BoxDecoration(
@@ -721,7 +754,8 @@ class RecipeDetailScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () {},
                 icon: Icon(Icons.play_arrow_rounded, size: iconSize),
-                label: Text('Start Cooking', style: GoogleFonts.poppins(fontSize: fontSize)),
+                label: Text('Start Cooking',
+                    style: GoogleFonts.poppins(fontSize: fontSize)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1B8A6B),
                   foregroundColor: Colors.white,
@@ -745,7 +779,8 @@ class RecipeDetailScreen extends StatelessWidget {
       'time': '20 mins',
       'rating': 4.5,
       'calories': '350 kcal',
-      'image': 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400',
+      'image':
+          'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400',
     };
   }
 }

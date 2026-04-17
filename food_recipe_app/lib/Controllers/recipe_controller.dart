@@ -10,6 +10,13 @@ class RecipeController {
   List<RecipeModel> favoriteRecipes = [];
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
+  static const List<String> featuredCountries = [
+    'Italy',
+    'India',
+    'Japan',
+    'Mexico',
+  ];
+
   void searchRecipes(String query) {
     if (query.isEmpty) {
       displayedRecipes = List.from(AppConstants.allRecipes);
@@ -23,6 +30,10 @@ class RecipeController {
   void filterByCountry(String country) {
     if (country == "All") {
       displayedRecipes = List.from(AppConstants.allRecipes);
+    } else if (country == "Others") {
+      displayedRecipes = AppConstants.allRecipes.where((recipe) {
+        return !featuredCountries.contains(recipe.recipeCountry);
+      }).toList();
     } else {
       displayedRecipes = AppConstants.allRecipes.where((recipe) {
         return recipe.recipeCountry == country;

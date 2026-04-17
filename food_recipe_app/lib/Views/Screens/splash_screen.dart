@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -114,9 +115,9 @@ class _SplashScreenState extends State<SplashScreen>
         children: [
           // 👉 Background Image
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
+                image: const CachedNetworkImageProvider(
                   'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800',
                 ),
                 fit: BoxFit.cover,

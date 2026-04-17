@@ -17,7 +17,7 @@ class AppConstants {
           "https://miro.medium.com/v2/resize:fit:1100/format:webp/1*hZ7Qf44gByCY246rC72buw.jpeg",
       recipeRating: 4.9,
       time: 120.0,
-      isFavorite: true,
+      isFavorite: false,
       ingredients: [
         Ingredient(name: "Beef Tenderloin", amount: 1.0, unit: "kg"),
         Ingredient(name: "Mushrooms", amount: 500.0, unit: "g"),
@@ -61,7 +61,7 @@ class AppConstants {
           "https://assets.tmecosys.com/image/upload/t_web_rdp_recipe_584x480/img/recipe/ras/Assets/89d5040a3e50962bd1fd9acc10c56347/Derivates/feec59de260737f0f037c6f0af6a4068482c9b76.jpg",
       recipeRating: 5.0,
       time: 65.0,
-      isFavorite: true,
+      isFavorite: false,
       ingredients: [
         Ingredient(name: "Boneless Chicken", amount: 800.0, unit: "g"),
         Ingredient(name: "Fresh Tomatoes", amount: 6.0, unit: "large"),
@@ -105,7 +105,7 @@ class AppConstants {
           "https://static.vecteezy.com/system/resources/previews/029/249/722/non_2x/top-view-delicious-tacos-al-pastor-food-plate-on-a-transparent-background-ai-generated-png.png",
       recipeRating: 4.9,
       time: 240.0,
-      isFavorite: true,
+      isFavorite: false,
       ingredients: [
         Ingredient(name: "Pork Shoulder", amount: 1.0, unit: "kg"),
         Ingredient(name: "Achiote Paste", amount: 50.0, unit: "g"),
@@ -149,7 +149,7 @@ class AppConstants {
           "https://png.pngtree.com/thumb_back/fh260/background/20240723/pngtree-thai-food-pad-thai-thai-national-dish-pad-thai-on-black-image_15911824.jpg",
       recipeRating: 4.8,
       time: 35.0,
-      isFavorite: true,
+      isFavorite: false,
       ingredients: [
         Ingredient(name: "Rice Noodles", amount: 200.0, unit: "g"),
         Ingredient(name: "Fresh Prawns", amount: 250.0, unit: "g"),
@@ -193,7 +193,7 @@ class AppConstants {
           "https://t4.ftcdn.net/jpg/04/42/52/11/360_F_442521186_XCMUBsPTLSnRQ12zvMjl8GYsD6bqGmw4.jpg",
       recipeRating: 4.7,
       time: 1440.0,
-      isFavorite: true,
+      isFavorite: false,
       ingredients: [
         Ingredient(name: "Whole Duck", amount: 1.0, unit: "piece"),
         Ingredient(name: "Maltose Syrup", amount: 3.0, unit: "tbsp"),
