@@ -4,11 +4,14 @@ class RecipeModel {
   final String chefName;
   final String chefCountry;
   final String recipeCountry;
-  final String recipeProcedure;
+  final String description;
+  final List<String> recipeProcedure;
   final String recipeImageUrl_1;
   final String recipeImageUrl_2;
   final double recipeRating;
   final double time;
+  final int calories;
+  final String servings;
   bool isFavorite;
   final List<Ingredient> ingredients;
 
@@ -18,11 +21,14 @@ class RecipeModel {
     required this.chefName,
     required this.chefCountry,
     required this.recipeCountry,
+    required this.description,
     required this.recipeProcedure,
     required this.recipeImageUrl_1,
     required this.recipeImageUrl_2,
     required this.recipeRating,
     required this.time,
+    required this.calories,
+    required this.servings,
     this.isFavorite = false,
     required this.ingredients,
   });

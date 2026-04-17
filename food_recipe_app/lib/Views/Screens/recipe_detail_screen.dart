@@ -1,8 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+
+import '../../Models/recipe_model.dart';
+import '../../Utils/constants.dart';
 import '../../Utils/responsive_utils.dart';
 
 class RecipeDetailScreen extends StatelessWidget {
@@ -23,13 +26,87 @@ class RecipeDetailScreen extends StatelessWidget {
     return parsed.isEmpty ? _fallbackImageUrl : parsed;
   }
 
+  String _formatIngredientAmount(double amount) {
+    return amount % 1 == 0 ? amount.toInt().toString() : amount.toString();
+  }
+
+  Map<String, dynamic>? _resolveRecipeData() {
+    if (recipeData != null && recipeData!.isNotEmpty) {
+      return recipeData;
+    }
+
+    final parsedId = int.tryParse(recipeId);
+    if (parsedId == null) {
+      return null;
+    }
+
+    RecipeModel? selectedRecipe;
+    for (final recipe in AppConstants.allRecipes) {
+      if (recipe.id == parsedId) {
+        selectedRecipe = recipe;
+        break;
+      }
+    }
+
+    if (selectedRecipe == null) {
+      return null;
+    }
+
+    final timeValue = selectedRecipe.time % 1 == 0
+        ? selectedRecipe.time.toInt().toString()
+        : selectedRecipe.time.toStringAsFixed(1);
+
+    final ingredients = selectedRecipe.ingredients
+        .map(
+          (ingredient) =>
+              '${_formatIngredientAmount(ingredient.amount)} ${ingredient.unit} ${ingredient.name}',
+        )
+        .toList();
+
+    return {
+      'id': selectedRecipe.id,
+      'title': selectedRecipe.title,
+      'image': selectedRecipe.recipeImageUrl_2,
+      'author': selectedRecipe.chefName,
+      'rating': selectedRecipe.recipeRating,
+      'time': '$timeValue mins',
+      'calories': '${selectedRecipe.calories} kcal',
+      'servings': selectedRecipe.servings,
+      'description': selectedRecipe.description,
+      'ingredients': ingredients,
+      'instructions': selectedRecipe.recipeProcedure,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    final recipe = recipeData ?? _getDummyRecipe();
-    final isDesktop = ResponsiveUtils.isDesktop(context);
+    final recipe = _resolveRecipeData();
+    if (recipe == null) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: Center(
+          child: Text(
+            'Recipe not found',
+            style: GoogleFonts.poppins(
+              fontSize: ResponsiveUtils.fontSizeBody(context),
+              color: Colors.black54,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+    }
+
     final isSmall = ResponsiveUtils.isSmallMobile(context);
 
-    // 👉 Responsive Values
     final appBarHeight = ResponsiveUtils.getValue4<double>(
       context,
       small: 250,
@@ -44,18 +121,9 @@ class RecipeDetailScreen extends StatelessWidget {
       large: 28,
       xlarge: 32,
     );
-    final sectionTitleSize = ResponsiveUtils.getValue4<double>(
-      context,
-      small: 16,
-      medium: 18,
-      large: 20,
-      xlarge: 22,
-    );
     final bodyFontSize = ResponsiveUtils.fontSizeBody(context);
-    final smallFontSize = ResponsiveUtils.fontSizeSmall(context);
     final iconSize = ResponsiveUtils.iconSize(context);
     final borderRadius = ResponsiveUtils.borderRadius(context);
-    final borderRadiusLarge = ResponsiveUtils.borderRadiusLarge(context);
     final spacingSmall = ResponsiveUtils.spacingSmall(context);
     final spacingMedium = ResponsiveUtils.spacingMedium(context);
     final spacingLarge = ResponsiveUtils.spacingLarge(context);
@@ -63,318 +131,31 @@ class RecipeDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-
-      // 👉 Desktop: App Bar مخصص
-      appBar: isDesktop
-          ? AppBar(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new),
-                onPressed: () => context.pop(),
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.favorite_border_rounded),
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: const Icon(Icons.share_rounded),
-                  onPressed: () {},
-                ),
-                SizedBox(width: horizontalPadding * 0.5),
-              ],
-            )
-          : null,
-
-      body: isDesktop
-          // 👉 Desktop Layout: عمودين (صورة + محتوى)
-          ? _buildDesktopLayout(context, recipe, borderRadiusLarge,
-              spacingLarge, horizontalPadding)
-          // 👉 Mobile/Tablet Layout: Scroll عادي
-          : _buildMobileLayout(
-              context,
-              recipe,
-              appBarHeight,
-              titleFontSize,
-              sectionTitleSize,
-              bodyFontSize,
-              smallFontSize,
-              iconSize,
-              borderRadius,
-              borderRadiusLarge,
-              spacingSmall,
-              spacingMedium,
-              spacingLarge,
-              horizontalPadding,
-              isSmall,
-            ),
-
-      // 👉 Bottom Bar: يظهر على الموبايل/تابلت فقط
-      bottomNavigationBar: isDesktop
-          ? null
-          : _buildBottomBar(context, iconSize, bodyFontSize, borderRadius),
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  // 👉 Desktop Layout (Two Columns)
-  // ─────────────────────────────────────────────
-
-  Widget _buildDesktopLayout(
-    BuildContext context,
-    Map<String, dynamic> recipe,
-    double borderRadiusLarge,
-    double spacingLarge,
-    double horizontalPadding,
-  ) {
-    return Row(
-      children: [
-        // 👈 Image Column (40%)
-        Expanded(
-          flex: 4,
-          child: Container(
-            height: double.infinity,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image:
-                    CachedNetworkImageProvider(_safeImageUrl(recipe['image'])),
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: Stack(
-              children: [
-                // Gradient Overlay
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.3),
-                      ],
-                    ),
-                  ),
-                ),
-                // Back Button
-                Positioned(
-                  top: 20,
-                  left: 20,
-                  child: IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.arrow_back_ios_new, size: 20),
-                    ),
-                    onPressed: () => context.pop(),
-                  ),
-                ),
-                // Action Buttons
-                Positioned(
-                  top: 20,
-                  right: 20,
-                  child: Column(
-                    children: [
-                      _desktopActionButton(
-                          Icons.favorite_border_rounded, () {}),
-                      const SizedBox(height: 12),
-                      _desktopActionButton(Icons.share_rounded, () {}),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // 👈 Content Column (60%)
-        Expanded(
-          flex: 6,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(ResponsiveUtils.verticalPadding(context)),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildDesktopContent(
-                      context, recipe, borderRadiusLarge, spacingLarge),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _desktopActionButton(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(icon, size: 20),
+      body: _buildMobileLayout(
+        context,
+        recipe,
+        appBarHeight,
+        titleFontSize,
+        bodyFontSize,
+        iconSize,
+        borderRadius,
+        spacingSmall,
+        spacingMedium,
+        spacingLarge,
+        horizontalPadding,
+        isSmall,
       ),
     );
   }
-
-  Widget _buildDesktopContent(
-    BuildContext context,
-    Map<String, dynamic> recipe,
-    double borderRadiusLarge,
-    double spacingLarge,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Title
-        Text(
-          recipe['title'],
-          style: GoogleFonts.poppins(
-            fontSize: ResponsiveUtils.fontSizeTitle(context),
-            fontWeight: FontWeight.w700,
-            color: Colors.black87,
-          ),
-        ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.3, end: 0),
-
-        SizedBox(height: ResponsiveUtils.spacingSmall(context)),
-
-        // Author & Rating
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundImage: CachedNetworkImageProvider(
-                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50',
-              ),
-            ),
-            SizedBox(width: ResponsiveUtils.spacingSmall(context)),
-            Text(
-              recipe['author'] ?? 'By Chef',
-              style: GoogleFonts.poppins(
-                fontSize: ResponsiveUtils.fontSizeBody(context),
-                color: Colors.black87,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const Spacer(),
-            Icon(Icons.star_rounded, color: const Color(0xFFFFC107), size: 20),
-            SizedBox(width: 4),
-            Text(
-              recipe['rating']?.toString() ?? '4.5',
-              style: GoogleFonts.poppins(
-                fontSize: ResponsiveUtils.fontSizeBody(context),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3, end: 0),
-
-        SizedBox(height: spacingLarge),
-
-        // Info Cards (Horizontal)
-        Row(
-          children: [
-            _buildInfoCard(
-              icon: Icons.access_time_rounded,
-              label: 'Time',
-              value: recipe['time'] ?? '20 mins',
-              color: const Color(0xFF1B8A6B),
-              context: context,
-            ),
-            SizedBox(width: ResponsiveUtils.spacingMedium(context)),
-            _buildInfoCard(
-              icon: Icons.local_fire_department_rounded,
-              label: 'Calories',
-              value: recipe['calories'] ?? '350 kcal',
-              color: const Color(0xFFFF6B6B),
-              context: context,
-            ),
-            SizedBox(width: ResponsiveUtils.spacingMedium(context)),
-            _buildInfoCard(
-              icon: Icons.restaurant_rounded,
-              label: 'Servings',
-              value: '2-3',
-              color: const Color(0xFF4ECDC4),
-              context: context,
-            ),
-          ],
-        ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.3, end: 0),
-
-        SizedBox(height: spacingLarge),
-
-        // Description
-        _buildSectionTitle('Description', context, 500),
-        SizedBox(height: ResponsiveUtils.spacingSmall(context)),
-        Text(
-          'This delicious recipe is perfect for any occasion. Made with fresh ingredients and lots of love, it will surely satisfy your taste buds.',
-          style: GoogleFonts.poppins(
-            fontSize: ResponsiveUtils.fontSizeBody(context),
-            color: Colors.black54,
-            height: 1.6,
-          ),
-        ).animate().fadeIn(delay: 600.ms).slideX(begin: -0.2, end: 0),
-
-        SizedBox(height: spacingLarge),
-
-        // Ingredients & Instructions Side by Side
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Ingredients
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionTitle('Ingredients', context, 700),
-                  SizedBox(height: ResponsiveUtils.spacingSmall(context)),
-                  ..._buildIngredientsList(context).take(4),
-                ],
-              ),
-            ),
-            SizedBox(width: spacingLarge),
-            // Instructions
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionTitle('Instructions', context, 700),
-                  SizedBox(height: ResponsiveUtils.spacingSmall(context)),
-                  ..._buildInstructionsList(context).take(3),
-                ],
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 80),
-      ],
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  // 👉 Mobile/Tablet Layout (Single Column)
-  // ─────────────────────────────────────────────
 
   Widget _buildMobileLayout(
     BuildContext context,
     Map<String, dynamic> recipe,
     double appBarHeight,
     double titleFontSize,
-    double sectionTitleSize,
     double bodyFontSize,
-    double smallFontSize,
     double iconSize,
     double borderRadius,
-    double borderRadiusLarge,
     double spacingSmall,
     double spacingMedium,
     double spacingLarge,
@@ -383,7 +164,6 @@ class RecipeDetailScreen extends StatelessWidget {
   ) {
     return CustomScrollView(
       slivers: [
-        // 👉 App Bar with Hero Image
         SliverAppBar(
           expandedHeight: appBarHeight,
           pinned: true,
@@ -429,15 +209,12 @@ class RecipeDetailScreen extends StatelessWidget {
             ),
           ),
         ),
-
-        // 👉 Content
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.all(horizontalPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title
                 Text(
                   recipe['title'],
                   style: GoogleFonts.poppins(
@@ -446,21 +223,17 @@ class RecipeDetailScreen extends StatelessWidget {
                     color: Colors.black87,
                   ),
                 ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.3, end: 0),
-
                 SizedBox(height: spacingSmall),
-
-                // Author & Rating
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: isSmall ? 14 : 16,
-                      backgroundImage: CachedNetworkImageProvider(
-                        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50',
-                      ),
+                    Icon(
+                      Icons.person_outline_rounded,
+                      color: Colors.black54,
+                      size: iconSize,
                     ),
                     SizedBox(width: spacingSmall),
                     Text(
-                      recipe['author'] ?? 'By Chef',
+                      'By ${recipe['author'] ?? 'Chef'}',
                       style: GoogleFonts.poppins(
                         fontSize: bodyFontSize,
                         color: Colors.black87,
@@ -480,10 +253,7 @@ class RecipeDetailScreen extends StatelessWidget {
                     ),
                   ],
                 ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3, end: 0),
-
                 SizedBox(height: spacingLarge),
-
-                // Info Cards
                 Row(
                   children: [
                     _buildInfoCard(
@@ -505,56 +275,34 @@ class RecipeDetailScreen extends StatelessWidget {
                     _buildInfoCard(
                       icon: Icons.restaurant_rounded,
                       label: 'Servings',
-                      value: '2-3',
+                      value: (recipe['servings'] ?? '1-2').toString(),
                       color: const Color(0xFF4ECDC4),
                       context: context,
                     ),
                   ],
                 ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.3, end: 0),
-
                 SizedBox(height: spacingLarge),
-
-                // Description
                 _buildSectionTitle('Description', context, 500),
                 SizedBox(height: spacingSmall),
                 Text(
-                  'This delicious recipe is perfect for any occasion. Made with fresh ingredients and lots of love, it will surely satisfy your taste buds. Follow the steps below to create this amazing dish.',
+                  (recipe['description'] ??
+                          'A delicious recipe made with quality ingredients and simple, clear steps.')
+                      .toString(),
                   style: GoogleFonts.poppins(
                     fontSize: bodyFontSize,
                     color: Colors.black54,
                     height: 1.6,
                   ),
                 ).animate().fadeIn(delay: 600.ms).slideX(begin: -0.2, end: 0),
-
                 SizedBox(height: spacingLarge),
-
-                // Ingredients
                 _buildSectionTitle('Ingredients', context, 700),
                 SizedBox(height: spacingSmall),
-                ..._buildIngredientsList(context).map((item) => item
-                    .animate()
-                    .fadeIn(
-                        delay: Duration(
-                            milliseconds: 800 +
-                                (_buildIngredientsList(context).indexOf(item) *
-                                    100)))
-                    .slideX(begin: -0.2, end: 0)),
-
+                ..._buildAnimatedIngredients(context, recipe),
                 SizedBox(height: spacingLarge),
-
-                // Instructions
                 _buildSectionTitle('Instructions', context, 1200),
                 SizedBox(height: spacingSmall),
-                ..._buildInstructionsList(context).map((item) => item
-                    .animate()
-                    .fadeIn(
-                        delay: Duration(
-                            milliseconds: 1300 +
-                                (_buildInstructionsList(context).indexOf(item) *
-                                    150)))
-                    .slideX(begin: -0.2, end: 0)),
-
-                const SizedBox(height: 100),
+                ..._buildAnimatedInstructions(context, recipe),
+                const SizedBox(height: 32),
               ],
             ),
           ),
@@ -562,10 +310,6 @@ class RecipeDetailScreen extends StatelessWidget {
       ],
     );
   }
-
-  // ─────────────────────────────────────────────
-  // 👉 Helper Widgets (Responsive)
-  // ─────────────────────────────────────────────
 
   Widget _buildSectionTitle(String title, BuildContext context, int delay) {
     return Text(
@@ -595,7 +339,7 @@ class RecipeDetailScreen extends StatelessWidget {
           horizontal: 8,
         ),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius:
               BorderRadius.circular(ResponsiveUtils.borderRadius(context)),
         ),
@@ -624,14 +368,23 @@ class RecipeDetailScreen extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildIngredientsList(BuildContext context) {
-    final ingredients = [
-      '2 cups fresh vegetables',
-      '1 tbsp olive oil',
-      'Salt and pepper to taste',
-      'Fresh herbs',
-      '1 cup protein of choice',
-    ];
+  List<String> _asStringList(dynamic rawValue, List<String> fallback) {
+    if (rawValue is List) {
+      return rawValue.map((item) => item.toString()).toList();
+    }
+    return fallback;
+  }
+
+  List<Widget> _buildIngredientsList(
+      BuildContext context, Map<String, dynamic> recipe) {
+    final ingredients = _asStringList(
+      recipe['ingredients'],
+      const [
+        '500 g main ingredient',
+        '2 tbsp oil',
+        'Salt and pepper to taste',
+      ],
+    );
     final iconSize = ResponsiveUtils.getValue4<double>(
       context,
       small: 14,
@@ -645,6 +398,7 @@ class RecipeDetailScreen extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               width: 20,
@@ -656,10 +410,12 @@ class RecipeDetailScreen extends StatelessWidget {
               child: Icon(Icons.check, color: Colors.white, size: iconSize),
             ),
             SizedBox(width: ResponsiveUtils.spacingMedium(context)),
-            Text(
-              ingredient,
-              style: GoogleFonts.poppins(
-                  fontSize: fontSize, color: Colors.black87),
+            Expanded(
+              child: Text(
+                ingredient,
+                style: GoogleFonts.poppins(
+                    fontSize: fontSize, color: Colors.black87),
+              ),
             ),
           ],
         ),
@@ -667,15 +423,29 @@ class RecipeDetailScreen extends StatelessWidget {
     }).toList();
   }
 
-  List<Widget> _buildInstructionsList(BuildContext context) {
-    final instructions = [
-      'Prepare all ingredients and wash vegetables thoroughly',
-      'Heat olive oil in a pan over medium heat',
-      'Add protein and cook until golden brown',
-      'Add vegetables and stir fry for 5 minutes',
-      'Season with salt, pepper, and herbs',
-      'Serve hot and enjoy!',
-    ];
+  List<Widget> _buildAnimatedIngredients(
+      BuildContext context, Map<String, dynamic> recipe) {
+    final baseItems = _buildIngredientsList(context, recipe);
+    return baseItems.asMap().entries.map((entry) {
+      final index = entry.key;
+      final item = entry.value;
+      return item
+          .animate()
+          .fadeIn(delay: Duration(milliseconds: 800 + (index * 100)))
+          .slideX(begin: -0.2, end: 0);
+    }).toList();
+  }
+
+  List<Widget> _buildInstructionsList(
+      BuildContext context, Map<String, dynamic> recipe) {
+    final instructions = _asStringList(
+      recipe['instructions'],
+      const [
+        'Prepare ingredients.',
+        'Cook following the recipe steps.',
+        'Serve and enjoy.',
+      ],
+    );
     final boxSize = ResponsiveUtils.getValue4<double>(
       context,
       small: 28,
@@ -729,58 +499,16 @@ class RecipeDetailScreen extends StatelessWidget {
     }).toList();
   }
 
-  Widget _buildBottomBar(
-    BuildContext context,
-    double iconSize,
-    double fontSize,
-    double borderRadius,
-  ) {
-    return Container(
-      padding: EdgeInsets.all(ResponsiveUtils.horizontalPadding(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: Icon(Icons.play_arrow_rounded, size: iconSize),
-                label: Text('Start Cooking',
-                    style: GoogleFonts.poppins(fontSize: fontSize)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1B8A6B),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(borderRadius),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Map<String, dynamic> _getDummyRecipe() {
-    return {
-      'title': 'Delicious Recipe',
-      'author': 'By Chef',
-      'time': '20 mins',
-      'rating': 4.5,
-      'calories': '350 kcal',
-      'image':
-          'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400',
-    };
+  List<Widget> _buildAnimatedInstructions(
+      BuildContext context, Map<String, dynamic> recipe) {
+    final baseItems = _buildInstructionsList(context, recipe);
+    return baseItems.asMap().entries.map((entry) {
+      final index = entry.key;
+      final item = entry.value;
+      return item
+          .animate()
+          .fadeIn(delay: Duration(milliseconds: 1300 + (index * 150)))
+          .slideX(begin: -0.2, end: 0);
+    }).toList();
   }
 }

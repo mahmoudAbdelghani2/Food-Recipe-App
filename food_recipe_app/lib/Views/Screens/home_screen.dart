@@ -32,18 +32,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<RecipeModel> get _categoryRecipes => _recipeController.displayedRecipes;
 
+  String _formatIngredientAmount(double amount) {
+    return amount % 1 == 0 ? amount.toInt().toString() : amount.toString();
+  }
+
   Map<String, dynamic> _toRecipeDetailsMap(RecipeModel recipe) {
     final timeValue = recipe.time % 1 == 0
         ? recipe.time.toInt().toString()
         : recipe.time.toStringAsFixed(1);
 
+    final ingredients = recipe.ingredients
+        .map((ingredient) =>
+            '${_formatIngredientAmount(ingredient.amount)} ${ingredient.unit} ${ingredient.name}')
+        .toList();
+
     return {
       'id': recipe.id,
       'title': recipe.title,
-      'image': recipe.recipeImageUrl_1,
-      'author': 'By ${recipe.chefName}',
+      'image': recipe.recipeImageUrl_2,
+      'author': recipe.chefName,
       'rating': recipe.recipeRating,
       'time': '$timeValue mins',
+      'calories': '${recipe.calories} kcal',
+      'servings': recipe.servings,
+      'description': recipe.description,
+      'ingredients': ingredients,
+      'instructions': recipe.recipeProcedure,
     };
   }
 

@@ -57,9 +57,10 @@ class AppRouter {
         path: '/recipe/:id',
         builder: (context, state) {
           final recipe = state.extra as Map<String, dynamic>? ?? {};
+          final recipeId = state.pathParameters['id'] ?? '1';
           return RecipeDetailScreen(
             recipeData: recipe,
-            recipeId: '1',
+            recipeId: recipeId,
           );
         },
       ),
