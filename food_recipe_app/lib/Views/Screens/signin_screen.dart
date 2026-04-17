@@ -2,96 +2,69 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../Utils/responsive_utils.dart';
+import 'signup_screen.dart';
 import 'home_screen.dart';
 
-class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
-  final _nameController = TextEditingController();
+class _SignInScreenState extends State<SignInScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-
-  String? _selectedGender;
   bool _obscurePassword = true;
-  bool _obscureConfirm = true;
-  bool _acceptTerms = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final isFormValid = _acceptTerms &&
-        _selectedGender != null &&
-        _nameController.text.isNotEmpty &&
-        _emailController.text.isNotEmpty &&
-        _passwordController.text.isNotEmpty &&
-        _confirmPasswordController.text.isNotEmpty;
-
     final isDesktop = ResponsiveUtils.isDesktop(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
+          // 👉 Responsive Padding
           padding: EdgeInsets.symmetric(
             horizontal: ResponsiveUtils.horizontalPadding(context),
             vertical: ResponsiveUtils.verticalPadding(context),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top -
-                  MediaQuery.of(context).padding.bottom -
-                  ResponsiveUtils.verticalPadding(context) * 2,
               maxWidth: ResponsiveUtils.maxContentWidth(context) ?? double.infinity,
             ),
             child: IntrinsicHeight(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 👉 Header Section
+                  // 👉 Header Section - "Hello, Welcome Back!"
                   Text(
-                    'Create an account',
+                    'Hello,',
                     style: GoogleFonts.poppins(
-                      fontSize: ResponsiveUtils.fontSizeHeading(context), // 👈 بدلاً من _getFontSizeTitle
+                      fontSize: ResponsiveUtils.fontSizeTitle(context),
                       fontWeight: FontWeight.w700,
                       color: Colors.black87,
+                      height: 1.1,
                     ),
                   ),
-                  SizedBox(height: ResponsiveUtils.spacingSmall(context)),
                   Text(
-                    "Let's help you set up your account,\nit won't take long.",
+                    'Welcome Back!',
                     style: GoogleFonts.poppins(
-                      fontSize: ResponsiveUtils.fontSizeBody(context),
-                      color: Colors.black45,
-                      height: 1.5,
+                      fontSize: ResponsiveUtils.fontSizeTitle(context),
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                      height: 1.2,
                     ),
                   ),
                   SizedBox(height: ResponsiveUtils.spacingLarge(context)),
-
-                  // 👉 Name Field
-                  _buildLabel('Name', context),
-                  SizedBox(height: ResponsiveUtils.spacingSmall(context)),
-                  _buildTextField(
-                    controller: _nameController,
-                    hint: 'Enter Name',
-                    prefixIcon: Icons.person_outline_rounded,
-                    context: context,
-                  ),
-                  SizedBox(height: ResponsiveUtils.spacingMedium(context)),
 
                   // 👉 Email Field
                   _buildLabel('Email', context),
@@ -105,14 +78,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   SizedBox(height: ResponsiveUtils.spacingMedium(context)),
 
-                  // 👉 Gender Selection
-                  _buildLabel('Gender', context),
-                  SizedBox(height: ResponsiveUtils.spacingSmall(context)),
-                  _buildGenderSelection(context),
-                  SizedBox(height: ResponsiveUtils.spacingMedium(context)),
-
                   // 👉 Password Field
-                  _buildLabel('Password', context),
+                  _buildLabel('Enter Password', context),
                   SizedBox(height: ResponsiveUtils.spacingSmall(context)),
                   _buildTextField(
                     controller: _passwordController,
@@ -133,106 +100,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         minWidth: ResponsiveUtils.iconSize(context) + 16,
                         minHeight: ResponsiveUtils.iconSize(context) + 16,
                       ),
+                      padding: EdgeInsets.zero,
                     ),
                     context: context,
+                  ),
+                  SizedBox(height: ResponsiveUtils.spacingSmall(context)),
+
+                  // 👉 Forgot Password (Right Aligned)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {},
+                      child: Text(
+                        'Forgot Password?',
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFF1B8A6B),
+                          fontSize: ResponsiveUtils.fontSizeBody(context),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   ),
                   SizedBox(height: ResponsiveUtils.spacingMedium(context)),
 
-                  // 👉 Confirm Password Field
-                  _buildLabel('Confirm Password', context),
-                  SizedBox(height: ResponsiveUtils.spacingSmall(context)),
-                  _buildTextField(
-                    controller: _confirmPasswordController,
-                    hint: 'Retype Password',
-                    obscure: _obscureConfirm,
-                    prefixIcon: Icons.lock_outline_rounded,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirm
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: Colors.grey,
-                        size: ResponsiveUtils.iconSize(context),
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscureConfirm = !_obscureConfirm),
-                      constraints: BoxConstraints(
-                        minWidth: ResponsiveUtils.iconSize(context) + 16,
-                        minHeight: ResponsiveUtils.iconSize(context) + 16,
-                      ),
-                    ),
-                    context: context,
-                  ),
-                  SizedBox(height: ResponsiveUtils.spacingLarge(context)),
-
-                  // 👉 Terms Checkbox
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: _acceptTerms,
-                          activeColor: const Color(0xFF1B8A6B),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          side: const BorderSide(color: Color(0xFF1B8A6B)),
-                          onChanged: (v) => setState(() => _acceptTerms = v!),
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ),
-                      SizedBox(width: ResponsiveUtils.spacingSmall(context)),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _acceptTerms = !_acceptTerms),
-                          child: RichText(
-                            text: TextSpan(
-                              style: GoogleFonts.poppins(
-                                color: Colors.black54,
-                                fontSize: ResponsiveUtils.fontSizeBody(context),
-                              ),
-                              children: [
-                                const TextSpan(text: 'I agree to the '),
-                                TextSpan(
-                                  text: 'Terms & Conditions',
-                                  style: const TextStyle(
-                                    color: Color(0xFF1B8A6B),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: ResponsiveUtils.spacingLarge(context)),
-
-                  // 👉 Sign Up Button
+                  // 👉 Sign In Button (Push to bottom on desktop)
                   if (isDesktop) const Spacer(),
 
                   SizedBox(
                     width: double.infinity,
                     height: ResponsiveUtils.buttonHeight(context),
                     child: ElevatedButton(
-                      onPressed: isFormValid
-                          ? () {
+                      onPressed: () {
+
+                        context.go('/home');
+
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                              builder: (_) => const HomeScreen()),
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
                         );
-                      }
-                          : null,
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1B8A6B),
-                        disabledBackgroundColor:
-                        const Color(0xFF1B8A6B).withOpacity(0.4),
-                        disabledForegroundColor: Colors.white.withOpacity(0.7),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
@@ -246,7 +154,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Sign Up'),
+                          Text('Sign In'),
                           SizedBox(width: ResponsiveUtils.spacingSmall(context)),
                           Icon(Icons.arrow_forward_rounded,
                               size: ResponsiveUtils.iconSize(context)),
@@ -264,21 +172,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   _buildSocialButtons(context),
                   SizedBox(height: ResponsiveUtils.spacingLarge(context)),
 
-                  // 👉 Sign In Link
+                  // 👉 Sign Up Link
                   Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Already a member? ',
+                          "Don't have an account? ",
                           style: GoogleFonts.poppins(
-                              color: Colors.black54,
-                              fontSize: ResponsiveUtils.fontSizeBody(context)),
+                            color: Colors.black54,
+                            fontSize: ResponsiveUtils.fontSizeBody(context),
+                          ),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.pop(context),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const SignUpScreen()),
+                            );
+                          },
                           child: Text(
-                            'Sign In',
+                            'Sign up',
                             style: GoogleFonts.poppins(
                               color: const Color(0xFF1B8A6B),
                               fontSize: ResponsiveUtils.fontSizeBody(context),
@@ -290,6 +205,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
 
+                  // 👉 Extra spacing for desktop
                   if (isDesktop) const SizedBox(height: 40),
                 ],
               ),
@@ -300,58 +216,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-
-  Widget _buildGenderSelection(BuildContext context) {
-    final options = ['Male', 'Female', 'Other'];
-    final borderRadius = ResponsiveUtils.borderRadius(context);
-
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-      child: Row(
-        children: options.map((gender) {
-          final isSelected = _selectedGender == gender;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _selectedGender = gender),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(
-                  vertical: ResponsiveUtils.isSmallMobile(context) ? 10 : 14,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF1B8A6B) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(borderRadius - 2),
-                  boxShadow: isSelected
-                      ? [
-                    BoxShadow(
-                      color: const Color(0xFF1B8A6B).withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    gender,
-                    style: GoogleFonts.poppins(
-                      fontSize: ResponsiveUtils.fontSizeBody(context),
-                      fontWeight: FontWeight.w500,
-                      color: isSelected ? Colors.white : Colors.black54,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
 
   Widget _buildLabel(String text, BuildContext context) {
     return Text(
@@ -441,32 +305,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _buildSocialButtons(BuildContext context) {
     final spacing = ResponsiveUtils.spacingMedium(context);
+    final isSmall = ResponsiveUtils.isSmallMobile(context);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _socialButton(
           icon: Icons.g_mobiledata_rounded,
-          label: 'Google',
+          label: isSmall ? 'G' : 'Google',
           color: const Color(0xFFEA4335),
           context: context,
         ),
         SizedBox(width: spacing),
         _socialButton(
           icon: Icons.facebook_rounded,
-          label: 'Facebook',
+          label: isSmall ? 'f' : 'Facebook',
           color: const Color(0xFF1877F2),
           context: context,
         ),
-        if (ResponsiveUtils.isTablet(context) || ResponsiveUtils.isDesktop(context)) ...[
-          SizedBox(width: spacing),
-          _socialButton(
-            icon: Icons.apple_rounded,
-            label: 'Apple',
-            color: Colors.black,
-            context: context,
-          ),
-        ],
+
+
       ],
     );
   }
@@ -479,11 +337,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }) {
     final borderRadius = ResponsiveUtils.borderRadius(context);
     final iconSize = ResponsiveUtils.iconSize(context);
+    final isSmall = ResponsiveUtils.isSmallMobile(context);
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: ResponsiveUtils.isSmallMobile(context) ? 12 : 16,
-        vertical: ResponsiveUtils.isSmallMobile(context) ? 10 : 12,
+        horizontal: isSmall ? 12 : 16,
+        vertical: isSmall ? 10 : 12,
       ),
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFFE8E8E8)),
@@ -493,15 +352,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: iconSize),
-          SizedBox(width: ResponsiveUtils.spacingSmall(context)),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: Colors.black87,
-              fontSize: ResponsiveUtils.fontSizeBody(context),
-              fontWeight: FontWeight.w500,
+          if (!isSmall) ...[
+            SizedBox(width: ResponsiveUtils.spacingSmall(context)),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                color: Colors.black87,
+                fontSize: ResponsiveUtils.fontSizeBody(context),
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

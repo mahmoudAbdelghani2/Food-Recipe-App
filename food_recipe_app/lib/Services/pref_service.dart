@@ -1,4 +1,5 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import "package:shared_preferences/shared_preferences.dart";
+
 
 class PrefService {
   static Future<void> saveLoginInfo(int userId) async {
@@ -19,7 +20,6 @@ class PrefService {
 
   static Future<void> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    // مسح بيانات الدخول فقط بدلاً من مسح كل الإعدادات
     await prefs.remove('isLoggedIn');
     await prefs.remove('userId');
   }

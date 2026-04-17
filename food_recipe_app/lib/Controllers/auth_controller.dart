@@ -1,9 +1,10 @@
 // ignore_for_file: avoid_print
 
-import 'package:food_recipe_app/Models/user_model.dart';
-import 'package:food_recipe_app/Services/database_helper.dart';
-// تأكد من مسار الاستدعاء ده حسب هيكل مشروعك
-import 'package:food_recipe_app/Services/pref_service.dart';
+
+
+import '../Models/user_model.dart';
+import '../Services/database_helper.dart';
+import '../Services/pref_service.dart';
 
 class AuthController {
   final DatabaseHelper _dbHelper = DatabaseHelper();
