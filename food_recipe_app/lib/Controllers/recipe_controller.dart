@@ -1,8 +1,9 @@
+// ignore_for_file: avoid_print
 
-import '../Models/recipe_model.dart';
-import '../Services/database_helper.dart';
-import '../Services/pref_service.dart';
-import '../Utils/constants.dart';
+import 'package:cooking_app/Models/recipe_model.dart';
+import 'package:cooking_app/Services/database_helper.dart';
+import 'package:cooking_app/Services/pref_service.dart';
+import 'package:cooking_app/Utils/constants.dart';
 
 class RecipeController {
   List<RecipeModel> displayedRecipes = List.from(AppConstants.allRecipes);

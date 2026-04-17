@@ -1,8 +1,6 @@
-
+import 'package:cooking_app/Models/user_model.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-
-import '../Models/user_model.dart';
 
 class DatabaseHelper {
   static Database? _database;
@@ -53,12 +51,40 @@ class DatabaseHelper {
     return await dbClient!.insert('Users', user.toMap());
   }
 
+  Future<bool> isEmailExists(String email) async {
+    final dbClient = await db;
+    final res = await dbClient!.query(
+      'Users',
+      columns: ['id'],
+      where: 'LOWER(email) = ?',
+      whereArgs: [email.trim().toLowerCase()],
+      limit: 1,
+    );
+
+    return res.isNotEmpty;
+  }
+
   Future<UserModel?> checkUser(String email, String password) async {
     final dbClient = await db;
     var res = await dbClient!.query(
       'Users',
-      where: 'email = ? AND password = ?',
-      whereArgs: [email, password],
+      where: 'LOWER(email) = ? AND password = ?',
+      whereArgs: [email.trim().toLowerCase(), password],
+    );
+
+    if (res.isNotEmpty) {
+      return UserModel.fromMap(res.first);
+    }
+    return null;
+  }
+
+  Future<UserModel?> getUserById(int userId) async {
+    final dbClient = await db;
+    final res = await dbClient!.query(
+      'Users',
+      where: 'id = ?',
+      whereArgs: [userId],
+      limit: 1,
     );
 
     if (res.isNotEmpty) {

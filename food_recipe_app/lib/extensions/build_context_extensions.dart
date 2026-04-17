@@ -1,14 +1,13 @@
 // 📁 lib/extensions/build_context_extensions.dart
+
+import 'package:cooking_app/Utils/responsive_utils.dart';
 import 'package:flutter/material.dart';
-import '../Utils/responsive_utils.dart';
-import '../utils/responsive_utils.dart';
 
 extension ResponsiveBuildContext on BuildContext {
   bool get isSmallMobile => ResponsiveUtils.isSmallMobile(this);
   bool get isMobile => ResponsiveUtils.isMobile(this);
   bool get isTablet => ResponsiveUtils.isTablet(this);
   bool get isDesktop => ResponsiveUtils.isDesktop(this);
-
 
   double get horizontalPadding => ResponsiveUtils.horizontalPadding(this);
   double get verticalPadding => ResponsiveUtils.verticalPadding(this);

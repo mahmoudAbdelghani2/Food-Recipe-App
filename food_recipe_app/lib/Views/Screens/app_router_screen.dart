@@ -8,24 +8,23 @@ import 'package:cooking_app/Views/Screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-
 final ValueNotifier<bool?> authState = ValueNotifier<bool?>(null);
-
 
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/splash',
+    refreshListenable: authState,
     redirect: (context, state) {
       final isLoggedIn = authState.value;
 
       if (isLoggedIn == null) return null;
 
-      if (isLoggedIn && (state.matchedLocation == '/splash' ||
-          state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register')) {
+      if (isLoggedIn &&
+          (state.matchedLocation == '/splash' ||
+              state.matchedLocation == '/login' ||
+              state.matchedLocation == '/register')) {
         return '/home';
       }
-
 
       if (!isLoggedIn && state.matchedLocation == '/home') {
         return '/login';
@@ -40,7 +39,7 @@ class AppRouter {
       ),
       GoRoute(
         path: '/login',
-        builder: (context, state) =>  const SignInScreen(),
+        builder: (context, state) => const SignInScreen(),
       ),
       GoRoute(
         path: '/register',
@@ -58,7 +57,10 @@ class AppRouter {
         path: '/recipe/:id',
         builder: (context, state) {
           final recipe = state.extra as Map<String, dynamic>? ?? {};
-          return RecipeDetailScreen(recipeData: recipe, recipeId: '1',);
+          return RecipeDetailScreen(
+            recipeData: recipe,
+            recipeId: '1',
+          );
         },
       ),
     ],

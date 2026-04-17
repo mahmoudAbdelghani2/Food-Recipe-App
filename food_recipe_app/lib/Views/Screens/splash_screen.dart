@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../Controllers/auth_controller.dart';
 import '../../Utils/responsive_utils.dart';
 
 import 'app_router_screen.dart';
@@ -14,9 +15,11 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
+  final AuthController _authController = AuthController();
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
+  bool _hasNavigated = false;
 
   @override
   void initState() {
@@ -31,9 +34,7 @@ class _SplashScreenState extends State<SplashScreen>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _controller.forward();
-
-    // 👉 Auto-navigate after animation (اختياري)
-    // _autoNavigate();
+    _initSessionAndNavigate();
   }
 
   @override
@@ -42,18 +43,20 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
-  // 👉 Auto-navigate function (لو عايزة التوجيه يكون أوتوماتيك)
-  Future<void> _autoNavigate() async {
-    await Future.delayed(const Duration(seconds: 3)); // انتظر الأنيميشن
-    if (mounted) {
-      authState.value = false;
-      if (mounted) context.go('/login');
-    }
+  Future<void> _initSessionAndNavigate() async {
+    final isLoggedIn = await _authController.isUserLoggedIn();
+    authState.value = isLoggedIn;
+
+    await Future.delayed(const Duration(milliseconds: 1400));
+    _navigateToNext();
   }
 
   void _navigateToNext() {
-    authState.value = false;
-    context.go('/login');
+    if (!mounted || _hasNavigated) return;
+    _hasNavigated = true;
+
+    final nextRoute = authState.value == true ? '/home' : '/login';
+    context.go(nextRoute);
   }
 
   @override
@@ -63,19 +66,39 @@ class _SplashScreenState extends State<SplashScreen>
     final isDesktop = ResponsiveUtils.isDesktop(context);
 
     final logoSize = ResponsiveUtils.getValue4<double>(
-      context, small: 70, medium: 80, large: 90, xlarge: 100,
+      context,
+      small: 70,
+      medium: 80,
+      large: 90,
+      xlarge: 100,
     );
     final iconSize = ResponsiveUtils.getValue4<double>(
-      context, small: 32, medium: 40, large: 44, xlarge: 48,
+      context,
+      small: 32,
+      medium: 40,
+      large: 44,
+      xlarge: 48,
     );
     final titleFontSize = ResponsiveUtils.getValue4<double>(
-      context, small: 36, medium: 44, large: 52, xlarge: 64,
+      context,
+      small: 36,
+      medium: 44,
+      large: 52,
+      xlarge: 64,
     );
     final subtitleFontSize = ResponsiveUtils.getValue4<double>(
-      context, small: 13, medium: 14, large: 15, xlarge: 16,
+      context,
+      small: 13,
+      medium: 14,
+      large: 15,
+      xlarge: 16,
     );
     final badgeFontSize = ResponsiveUtils.getValue4<double>(
-      context, small: 12, medium: 13, large: 14, xlarge: 15,
+      context,
+      small: 12,
+      medium: 13,
+      large: 14,
+      xlarge: 15,
     );
     final buttonHeight = ResponsiveUtils.buttonHeight(context);
     final buttonFontSize = ResponsiveUtils.fontSizeBody(context);
@@ -84,7 +107,6 @@ class _SplashScreenState extends State<SplashScreen>
     final spacingSmall = ResponsiveUtils.spacingSmall(context);
     final spacingMedium = ResponsiveUtils.spacingMedium(context);
     final spacingLarge = ResponsiveUtils.spacingLarge(context);
-    final borderRadius = ResponsiveUtils.borderRadius(context);
 
     return Scaffold(
       body: Stack(
@@ -162,7 +184,8 @@ class _SplashScreenState extends State<SplashScreen>
 
                     // 👉 Main Title "Get\nCooking"
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding * 0.5),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding * 0.5),
                       child: Text(
                         'Get\nCooking',
                         textAlign: TextAlign.center,
@@ -178,7 +201,8 @@ class _SplashScreenState extends State<SplashScreen>
 
                     // 👉 Subtitle
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding * 0.5),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: horizontalPadding * 0.5),
                       child: Text(
                         'Simple way to find Tasty Recipe',
                         textAlign: TextAlign.center,
@@ -192,7 +216,8 @@ class _SplashScreenState extends State<SplashScreen>
 
                     // 👉 Start Cooking Button
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: horizontalPadding),
                       child: SizedBox(
                         width: double.infinity,
                         height: buttonHeight,
@@ -215,7 +240,8 @@ class _SplashScreenState extends State<SplashScreen>
                             children: [
                               Text('Start Cooking'),
                               SizedBox(width: spacingSmall),
-                              Icon(Icons.arrow_forward_rounded, size: buttonIconSize),
+                              Icon(Icons.arrow_forward_rounded,
+                                  size: buttonIconSize),
                             ],
                           ),
                         ),
