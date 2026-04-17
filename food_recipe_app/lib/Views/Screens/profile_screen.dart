@@ -55,15 +55,15 @@ class ProfileScreen extends StatelessWidget {
                     const ProfileMenuItem(
                         icon: Icons.edit_outlined,
                         title: 'Edit Profile',
-                      subtitle: 'Update your personal info'),
+                        subtitle: 'Update your personal info'),
                     const ProfileMenuItem(
                         icon: Icons.bookmark_outline,
                         title: 'Saved Recipes',
-                      subtitle: 'Your favorite collections'),
+                        subtitle: 'Your favorite collections'),
                     const ProfileMenuItem(
                         icon: Icons.history_outlined,
                         title: 'Cooking History',
-                      subtitle: 'View your activity'),
+                        subtitle: 'View your activity'),
                   ]),
               _buildMenuSection(context,
                   title: 'App Settings',
@@ -72,15 +72,15 @@ class ProfileScreen extends StatelessWidget {
                     const ProfileMenuItem(
                         icon: Icons.notifications_outlined,
                         title: 'Notifications',
-                      subtitle: 'Manage alerts & updates'),
+                        subtitle: 'Manage alerts & updates'),
                     const ProfileMenuItem(
                         icon: Icons.palette_outlined,
                         title: 'Appearance',
-                      subtitle: 'Light / Dark mode'),
+                        subtitle: 'Light / Dark mode'),
                     const ProfileMenuItem(
                         icon: Icons.language_outlined,
                         title: 'Language',
-                      subtitle: 'English'),
+                        subtitle: 'English'),
                   ]),
               _buildMenuSection(context,
                   title: 'Support',
@@ -89,11 +89,11 @@ class ProfileScreen extends StatelessWidget {
                     const ProfileMenuItem(
                         icon: Icons.chat_bubble_outline,
                         title: 'Help & Support',
-                      subtitle: 'Get help or contact us'),
+                        subtitle: 'Get help or contact us'),
                     const ProfileMenuItem(
                         icon: Icons.info_outline,
                         title: 'About App',
-                      subtitle: 'Version 1.0.0'),
+                        subtitle: 'Version 1.0.0'),
                   ]),
               const SizedBox(height: 20),
               const CustomLogoutButton(),

@@ -41,7 +41,7 @@ class CustomLogoutButton extends StatelessWidget {
                 await AuthController().logoutUser();
                 authState.value = false;
                 if (!context.mounted) return;
-                context.go('/login');
+                context.go('/splash');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
