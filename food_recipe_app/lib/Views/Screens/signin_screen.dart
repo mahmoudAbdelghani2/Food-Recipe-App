@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../Controllers/auth_controller.dart';
 import '../../Utils/responsive_utils.dart';
-import '../Widgets/custom_btn_signin_singup.dart';
-import '../Widgets/custom_snackBar.dart';
-import '../Widgets/custom_socialButton.dart';
-import '../Widgets/custom_textFormField.dart';
+import '../Widgets/register widgets/custom_btn_signin_singup.dart';
+import '../Widgets/register widgets/custom_snackBar.dart';
+import '../Widgets/register widgets/custom_socialButton.dart';
+import '../Widgets/register widgets/custom_textFormField.dart';
 import 'signup_screen.dart';
 import 'home_screen.dart';
 

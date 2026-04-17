@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../Controllers/auth_controller.dart';
-import '../../Models/user_model.dart';
-import '../../Utils/responsive_utils.dart';
+import '../../../Controllers/auth_controller.dart';
+import '../../../Models/user_model.dart';
+import '../../../Utils/responsive_utils.dart';
 
 class ProfileHeaderWidget extends StatelessWidget {
   final bool isDesktop;

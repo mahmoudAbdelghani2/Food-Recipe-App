@@ -4,7 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../Utils/responsive_utils.dart';
+import '../../../Utils/responsive_utils.dart';
 
 class AuthSubmitButton extends StatelessWidget {
   const AuthSubmitButton({

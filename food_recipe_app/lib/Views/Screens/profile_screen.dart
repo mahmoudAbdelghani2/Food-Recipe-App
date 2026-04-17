@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../Utils/responsive_utils.dart';
-import '../Widgets/custom_btn_logout.dart';
-import '../Widgets/custom_listtile.dart';
-import '../Widgets/profile_header_widget.dart';
+import '../Widgets/profile widgets/custom_btn_logout.dart';
+import '../Widgets/profile widgets/custom_listtile.dart';
+import '../Widgets/profile widgets/profile_header_widget.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
