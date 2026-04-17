@@ -11,6 +11,7 @@ import '../Widgets/home widgets/item_grid_widget.dart';
 import '../Widgets/home widgets/search_widget.dart';
 import '../Widgets/home widgets/top_rating_widget.dart';
 import 'profile_screen.dart';
+import 'saved_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,6 +26,12 @@ class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
   final RecipeController _recipeController = RecipeController();
   final TextEditingController _searchTextController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorites();
+  }
 
   bool get _isSearching => _searchQuery.trim().isNotEmpty;
 
@@ -63,6 +70,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onNavItemTapped(int index) {
     setState(() => _currentIndex = index);
+  }
+
+  Future<void> _loadFavorites() async {
+    await _recipeController.getFavorites();
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+  }
+
+  Future<void> _onFavoriteTapped(RecipeModel recipe) async {
+    final didToggle = await _recipeController.toggleFavorite(recipe.id);
+
+    if (!mounted) {
+      return;
+    }
+
+    if (!didToggle) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please sign in first to save recipes.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() {});
   }
 
   void _onSearchQueryChanged(String query) {
@@ -125,7 +160,16 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _currentIndex,
         children: [
           _buildHomeBody(),
-          const Center(child: Text('Saved', style: TextStyle(fontSize: 24))),
+          SavedScreen(
+            recipes: _recipeController.favoriteRecipes,
+            onRecipeTap: (recipe) {
+              context.push(
+                '/recipe/${recipe.id}',
+                extra: _toRecipeDetailsMap(recipe),
+              );
+            },
+            onFavoriteTap: _onFavoriteTapped,
+          ),
           const Center(
               child: Text('Add Recipe', style: TextStyle(fontSize: 24))),
           const Center(
@@ -183,6 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ItemGridWidget(
                   recipes: _searchedRecipes,
                   sectionTitle: null,
+                  onFavoriteTap: _onFavoriteTapped,
                   onRecipeTap: (recipe) {
                     context.push(
                       '/recipe/${recipe.id}',
@@ -203,6 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 20),
               ItemGridWidget(
                 recipes: _categoryRecipes,
+                onFavoriteTap: _onFavoriteTapped,
                 onRecipeTap: (recipe) {
                   context.push(
                     '/recipe/${recipe.id}',

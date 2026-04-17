@@ -11,11 +11,13 @@ class ItemGridWidget extends StatelessWidget {
     super.key,
     required this.recipes,
     this.onRecipeTap,
+    this.onFavoriteTap,
     this.sectionTitle = 'All Recipes',
   });
 
   final List<RecipeModel> recipes;
   final void Function(RecipeModel recipe)? onRecipeTap;
+  final Future<void> Function(RecipeModel recipe)? onFavoriteTap;
   final String? sectionTitle;
 
   String _formatRating(double rating) {
@@ -112,11 +114,15 @@ class ItemGridWidget extends StatelessWidget {
                             width: 38,
                             height: 38,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF2F5F4),
+                              color: recipe.isFavorite
+                                  ? const Color(0xFFE8F5EF)
+                                  : const Color(0xFFF2F5F4),
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: IconButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                await onFavoriteTap?.call(recipe);
+                              },
                               padding: EdgeInsets.zero,
                               iconSize: 20,
                               splashRadius: 20,
@@ -124,7 +130,9 @@ class ItemGridWidget extends StatelessWidget {
                                 recipe.isFavorite
                                     ? Icons.favorite_rounded
                                     : Icons.favorite_border_rounded,
-                                color: const Color(0xFF6DB7A7),
+                                color: recipe.isFavorite
+                                    ? const Color(0xFF1B8A6B)
+                                    : const Color(0xFF6DB7A7),
                               ),
                             ),
                           ),

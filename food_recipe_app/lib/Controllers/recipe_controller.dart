@@ -41,28 +41,36 @@ class RecipeController {
     }
   }
 
+  void _syncFavoriteFlags(List<int> favIds) {
+    for (final recipe in AppConstants.allRecipes) {
+      recipe.isFavorite = favIds.contains(recipe.id);
+    }
+  }
+
   Future<void> getFavorites() async {
     int? userId = await PrefService.getUserId();
 
     if (userId != null) {
       List<int> favIds = await _dbHelper.getFavoriteIds(userId);
-
-      favoriteRecipes = AppConstants.allRecipes.where((recipe) {
-        return favIds.contains(recipe.id);
-      }).toList();
+      _syncFavoriteFlags(favIds);
+      favoriteRecipes =
+          AppConstants.allRecipes.where((recipe) => recipe.isFavorite).toList();
     } else {
+      _syncFavoriteFlags(const []);
       favoriteRecipes = [];
     }
   }
 
-  Future<void> toggleFavorite(int recipeId) async {
+  Future<bool> toggleFavorite(int recipeId) async {
     int? userId = await PrefService.getUserId();
 
     if (userId != null) {
       await _dbHelper.toggleFavorite(userId, recipeId);
       await getFavorites();
+      return true;
     } else {
       print("User is not logged in!");
+      return false;
     }
   }
 
