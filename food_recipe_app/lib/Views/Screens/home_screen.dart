@@ -100,6 +100,21 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {});
   }
 
+  Future<void> _openRecipeDetails(RecipeModel recipe) async {
+    final didChangeFavorite = await context.push(
+      '/recipe/${recipe.id}',
+      extra: _toRecipeDetailsMap(recipe),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (didChangeFavorite == true) {
+      await _loadFavorites();
+    }
+  }
+
   void _onSearchQueryChanged(String query) {
     setState(() {
       _searchQuery = query;
@@ -163,10 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SavedScreen(
             recipes: _recipeController.favoriteRecipes,
             onRecipeTap: (recipe) {
-              context.push(
-                '/recipe/${recipe.id}',
-                extra: _toRecipeDetailsMap(recipe),
-              );
+              _openRecipeDetails(recipe);
             },
             onFavoriteTap: _onFavoriteTapped,
           ),
@@ -229,20 +241,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   sectionTitle: null,
                   onFavoriteTap: _onFavoriteTapped,
                   onRecipeTap: (recipe) {
-                    context.push(
-                      '/recipe/${recipe.id}',
-                      extra: _toRecipeDetailsMap(recipe),
-                    );
+                    _openRecipeDetails(recipe);
                   },
                 ),
             ] else ...[
               TopRatingWidget(
                 recipes: _categoryRecipes,
                 onRecipeTap: (recipe) {
-                  context.push(
-                    '/recipe/${recipe.id}',
-                    extra: _toRecipeDetailsMap(recipe),
-                  );
+                  _openRecipeDetails(recipe);
                 },
               ),
               const SizedBox(height: 20),
@@ -250,10 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 recipes: _categoryRecipes,
                 onFavoriteTap: _onFavoriteTapped,
                 onRecipeTap: (recipe) {
-                  context.push(
-                    '/recipe/${recipe.id}',
-                    extra: _toRecipeDetailsMap(recipe),
-                  );
+                  _openRecipeDetails(recipe);
                 },
               ),
             ],

@@ -4,14 +4,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../Controllers/recipe_controller.dart';
 import '../../Models/recipe_model.dart';
 import '../../Utils/constants.dart';
 import '../../Utils/responsive_utils.dart';
 
-class RecipeDetailScreen extends StatelessWidget {
-  static const String _fallbackImageUrl =
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800';
-
+class RecipeDetailScreen extends StatefulWidget {
   final String recipeId;
   final Map<String, dynamic>? recipeData;
 
@@ -20,6 +18,93 @@ class RecipeDetailScreen extends StatelessWidget {
     required this.recipeId,
     this.recipeData,
   });
+
+  @override
+  State<RecipeDetailScreen> createState() => _RecipeDetailScreenState();
+}
+
+class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
+  static const String _fallbackImageUrl =
+      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800';
+
+  final RecipeController _recipeController = RecipeController();
+  int? _currentRecipeId;
+  bool _isFavorite = false;
+  bool _favoriteChanged = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavoriteState();
+  }
+
+  int? _extractRecipeId(Map<String, dynamic>? recipe) {
+    final rawId = recipe?['id'];
+    if (rawId is int) {
+      return rawId;
+    }
+    if (rawId is String) {
+      final parsed = int.tryParse(rawId);
+      if (parsed != null) {
+        return parsed;
+      }
+    }
+    return int.tryParse(widget.recipeId);
+  }
+
+  Future<void> _loadFavoriteState() async {
+    final resolvedRecipe = _resolveRecipeData();
+    final recipeId = _extractRecipeId(resolvedRecipe);
+    _currentRecipeId = recipeId;
+
+    if (recipeId == null) {
+      return;
+    }
+
+    await _recipeController.getFavorites();
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isFavorite = _recipeController.isFavorite(recipeId);
+    });
+  }
+
+  Future<void> _toggleFavorite() async {
+    final recipeId = _currentRecipeId;
+    if (recipeId == null) {
+      return;
+    }
+
+    final didToggle = await _recipeController.toggleFavorite(recipeId);
+    if (!mounted) {
+      return;
+    }
+
+    if (!didToggle) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please sign in first to save recipes.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isFavorite = !_isFavorite;
+      _favoriteChanged = true;
+    });
+  }
+
+  void _handleBack(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop(_favoriteChanged);
+      return;
+    }
+    context.go('/home');
+  }
 
   String _safeImageUrl(dynamic url) {
     final parsed = (url ?? '').toString().trim();
@@ -31,11 +116,11 @@ class RecipeDetailScreen extends StatelessWidget {
   }
 
   Map<String, dynamic>? _resolveRecipeData() {
-    if (recipeData != null && recipeData!.isNotEmpty) {
-      return recipeData;
+    if (widget.recipeData != null && widget.recipeData!.isNotEmpty) {
+      return widget.recipeData;
     }
 
-    final parsedId = int.tryParse(recipeId);
+    final parsedId = int.tryParse(widget.recipeId);
     if (parsedId == null) {
       return null;
     }
@@ -89,7 +174,7 @@ class RecipeDetailScreen extends StatelessWidget {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
-            onPressed: () => context.pop(),
+            onPressed: () => _handleBack(context),
           ),
         ),
         body: Center(
@@ -176,25 +261,29 @@ class RecipeDetailScreen extends StatelessWidget {
               ),
               child: const Icon(Icons.arrow_back_ios_new, size: 18),
             ),
-            onPressed: () => context.pop(),
+            onPressed: () => _handleBack(context),
           ),
           actions: [
             IconButton(
+              onPressed: _toggleFavorite,
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: _isFavorite ? const Color(0xFFE8F5EF) : Colors.white,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.favorite_border, size: 20),
+                child: Icon(
+                  _isFavorite ? Icons.favorite_rounded : Icons.favorite_border,
+                  size: 20,
+                  color: _isFavorite ? const Color(0xFF1B8A6B) : Colors.black87,
+                ),
               ),
-              onPressed: () {},
             ),
             SizedBox(width: horizontalPadding * 0.3),
           ],
           flexibleSpace: FlexibleSpaceBar(
             background: Hero(
-              tag: 'recipe_image_$recipeId',
+              tag: 'recipe_image_${widget.recipeId}',
               child: CachedNetworkImage(
                 imageUrl: _safeImageUrl(recipe['image']),
                 fit: BoxFit.cover,
